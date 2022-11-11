@@ -6,6 +6,7 @@ namespace cslox {
       R VisitBinaryExpr(Binary expr);
       R VisitGroupingExpr(Grouping expr);
       R VisitLiteralExpr(Literal expr);
+      R VisitLogicalExpr(Logical expr);
       R VisitVariableExpr(Variable expr);
       R VisitUnaryExpr(Unary expr);
     }
@@ -59,6 +60,21 @@ namespace cslox {
       }
 
       public object? value;
+    }
+    public class Logical : Expr {
+      public Logical(Expr left, Token op, Expr right) {
+        this.left = left;
+        this.op = op;
+        this.right = right;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor) {
+        return  visitor.VisitLogicalExpr(this);
+      }
+
+      public Expr left;
+      public Token op;
+      public Expr right;
     }
     public class Variable : Expr {
       public Variable(Token name) {

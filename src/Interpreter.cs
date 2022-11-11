@@ -35,6 +35,15 @@ namespace cslox
       return null;
     }
 
+    public object? VisitWhileStmt(Stmt.While stmt)
+    {
+      while(IsTruthy(Evaluate(stmt.condition))) {
+        Execute(stmt.body);
+      }
+
+      return null;
+    }
+
     public object? VisitBlockStmt(Stmt.Block stmt)
     {
       ExecuteBlock(stmt.statements, new Environment(environment));
@@ -49,6 +58,17 @@ namespace cslox
       }
 
       environment.Define(stmt.name.lexeme, value);
+      return null;
+    }
+
+    public object? VisitIfStmt(Stmt.If stmt)
+    {
+      if(IsTruthy(Evaluate(stmt.condition))) {
+        Execute(stmt.thenBranch);
+      } else if(stmt.elseBranch != null) {
+        Execute(stmt.elseBranch);
+      }
+
       return null;
     }
 
@@ -127,6 +147,19 @@ namespace cslox
     public object? VisitLiteralExpr(Expr.Literal expr)
     {
       return expr.value;
+    }
+
+    public object? VisitLogicalExpr(Expr.Logical expr)
+    {
+      object? left = Evaluate(expr.left);
+
+      if(expr.op.type == TokenType.OR) {
+        if(IsTruthy(left)) return left;
+      } else {
+        if(!IsTruthy(left)) return left;
+      }
+
+      return Evaluate(expr.right);
     }
 
     public object? VisitUnaryExpr(Expr.Unary expr)
