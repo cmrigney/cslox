@@ -2,7 +2,12 @@ namespace cslox
 {
   public class Interpreter : Expr.Visitor<object?>, Stmt.Visitor<object?>
   {
+    public Environment globals = new Environment();
     Environment environment = new Environment();
+
+    public Interpreter() {
+      globals.Define("clock", new ClockFn());
+    }
 
     public void Interpret(List<Stmt> statements) {
       try {
@@ -72,7 +77,22 @@ namespace cslox
       return null;
     }
 
-    void ExecuteBlock(List<Stmt> statements, Environment environment) {
+    public object? VisitFunctionStmt(Stmt.Function stmt)
+    {
+      LoxFunction function = new LoxFunction(stmt, environment);
+      environment.Define(stmt.name.lexeme, function);
+      return null;
+    }
+
+    public object? VisitReturnStmt(Stmt.Return stmt)
+    {
+      object? value = null;
+      if(stmt.value != null) value = Evaluate(stmt.value);
+
+      throw new Return(value);
+    }
+
+    public void ExecuteBlock(List<Stmt> statements, Environment environment) {
       Environment previous = this.environment;
       try {
         this.environment = environment;
@@ -90,6 +110,27 @@ namespace cslox
       object? value = Evaluate(expr.value);
       environment.Assign(expr.name, value);
       return value;
+    }
+
+    public object? VisitCallExpr(Expr.Call expr)
+    {
+      object? callee = Evaluate(expr.callee);
+
+      List<object?> arguments = new List<object?>();
+      foreach(Expr argument in expr.arguments) {
+        arguments.Add(Evaluate(argument));
+      }
+
+      if(!(callee is LoxCallable)) {
+        throw new RuntimeException(expr.paren, "Can only call functions and classes.");
+      }
+
+      LoxCallable function = (LoxCallable)callee;
+      if(arguments.Count != function.Arity()) {
+        throw new RuntimeException(expr.paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
+      }
+
+      return function.Call(this, arguments);
     }
 
     public object? VisitBinaryExpr(Expr.Binary expr)

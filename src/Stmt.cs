@@ -4,8 +4,10 @@ namespace cslox {
     public interface Visitor<R> {
       R VisitBlockStmt(Block stmt);
       R VisitExpressionStmt(Expression stmt);
+      R VisitFunctionStmt(Function stmt);
       R VisitIfStmt(If stmt);
       R VisitPrintStmt(Print stmt);
+      R VisitReturnStmt(Return stmt);
       R VisitVarStmt(Var stmt);
       R VisitWhileStmt(While stmt);
     }
@@ -32,6 +34,21 @@ namespace cslox {
 
       public Expr expression;
     }
+    public class Function : Stmt {
+      public Function(Token name, List<Token> parms, List<Stmt> body) {
+        this.name = name;
+        this.parms = parms;
+        this.body = body;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor) {
+        return  visitor.VisitFunctionStmt(this);
+      }
+
+      public Token name;
+      public List<Token> parms;
+      public List<Stmt> body;
+    }
     public class If : Stmt {
       public If(Expr condition, Stmt thenBranch, Stmt? elseBranch) {
         this.condition = condition;
@@ -57,6 +74,19 @@ namespace cslox {
       }
 
       public Expr expression;
+    }
+    public class Return : Stmt {
+      public Return(Token keyword, Expr? value) {
+        this.keyword = keyword;
+        this.value = value;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor) {
+        return  visitor.VisitReturnStmt(this);
+      }
+
+      public Token keyword;
+      public Expr? value;
     }
     public class Var : Stmt {
       public Var(Token name, Expr? initializer) {
