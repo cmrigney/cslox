@@ -3,9 +3,11 @@ namespace cslox
   public class Interpreter : Expr.Visitor<object?>, Stmt.Visitor<object?>
   {
     public Environment globals = new Environment();
-    Environment environment = new Environment();
+    Environment environment;
+    Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
 
     public Interpreter() {
+      environment = globals;
       globals.Define("clock", new ClockFn());
     }
 
@@ -17,6 +19,10 @@ namespace cslox
       } catch(RuntimeException error) {
         Program.RuntimeError(error);
       }
+    }
+
+    public void Resolve(Expr expr, int depth) {
+      locals[expr] = depth;
     }
 
     void Execute(Stmt stmt) {
@@ -108,7 +114,12 @@ namespace cslox
     public object? VisitAssignExpr(Expr.Assign expr)
     {
       object? value = Evaluate(expr.value);
-      environment.Assign(expr.name, value);
+      int distance;
+      if(locals.TryGetValue(expr, out distance)) {
+        environment.AssignAt(distance, expr.name, value);
+      } else {
+        globals.Assign(expr.name, value);
+      }
       return value;
     }
 
@@ -221,7 +232,17 @@ namespace cslox
 
     public object? VisitVariableExpr(Expr.Variable expr)
     {
-      return environment.Get(expr.name);
+      return LookupVariable(expr.name, expr);
+    }
+
+    object? LookupVariable(Token name, Expr expr) {
+      int distance;
+
+      if(locals.TryGetValue(expr, out distance)) {
+        return environment.GetAt(distance, name.lexeme);
+      } else {
+        return globals.Get(name);
+      }
     }
 
     bool IsTruthy(object? obj) {
