@@ -3,10 +3,18 @@ namespace cslox {
     Interpreter interpreter;
     Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
     FunctionType currentFunction = FunctionType.NONE;
+    ClassType currentClass = ClassType.NONE;
 
     enum FunctionType {
       NONE,
-      FUNCTION
+      METHOD,
+      FUNCTION,
+      INITIALIZER
+    }
+
+    enum ClassType {
+      NONE,
+      CLASS
     }
 
     public Resolver(Interpreter interpreter) {
@@ -84,6 +92,17 @@ namespace cslox {
       return null;
     }
 
+    public object? VisitThisExpr(Expr.This expr)
+    {
+      if(currentClass == ClassType.NONE) {
+        Program.Error(expr.keyword, "Can't use 'this' outside of a class.");
+        return null;
+      }
+
+      ResolveLocal(expr, expr.keyword);
+      return null;
+    }
+
     public object? VisitPrintStmt(Stmt.Print stmt)
     {
       Resolve(stmt.expression);
@@ -97,9 +116,39 @@ namespace cslox {
       }
 
       if(stmt.value != null) {
+        if(currentFunction == FunctionType.INITIALIZER) {
+          Program.Error(stmt.keyword, "Can't return a value from an initializer.");
+        }
+
         Resolve(stmt.value);
       }
 
+      return null;
+    }
+
+    public object? VisitClassStmt(Stmt.Class stmt)
+    {
+      ClassType enclosingClass = currentClass;
+      currentClass = ClassType.CLASS;
+
+      Declare(stmt.name);
+      Define(stmt.name);
+
+      BeginScope();
+      scopes.Peek()["this"] = true;
+
+      foreach(Stmt.Function method in stmt.methods) {
+        FunctionType declaration = FunctionType.METHOD;
+        if(method.name.lexeme.Equals("init")) {
+          declaration = FunctionType.INITIALIZER;
+        }
+
+        ResolveFunction(method, declaration);
+      }
+
+      EndScope();
+
+      currentClass = enclosingClass;
       return null;
     }
 
@@ -117,6 +166,18 @@ namespace cslox {
       }
 
       ResolveLocal(expr, expr.name);
+      return null;
+    }
+
+    public object? VisitSetExpr(Expr.Set expr) {
+      Resolve(expr.value);
+      Resolve(expr.obj);
+      return null;
+    }
+
+    public object? VisitGetExpr(Expr.Get expr)
+    {
+      Resolve(expr.obj);
       return null;
     }
 

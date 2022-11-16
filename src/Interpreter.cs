@@ -85,7 +85,7 @@ namespace cslox
 
     public object? VisitFunctionStmt(Stmt.Function stmt)
     {
-      LoxFunction function = new LoxFunction(stmt, environment);
+      LoxFunction function = new LoxFunction(stmt, environment, false);
       environment.Define(stmt.name.lexeme, function);
       return null;
     }
@@ -96,6 +96,21 @@ namespace cslox
       if(stmt.value != null) value = Evaluate(stmt.value);
 
       throw new Return(value);
+    }
+
+    public object? VisitClassStmt(Stmt.Class stmt)
+    {
+      environment.Define(stmt.name.lexeme, null);
+
+      Dictionary<string, LoxFunction> methods = new Dictionary<string, LoxFunction>();
+      foreach(Stmt.Function method in stmt.methods) {
+        LoxFunction function = new LoxFunction(method, environment, method.name.lexeme.Equals("init"));
+        methods[method.name.lexeme] = function;
+      }
+
+      LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+      environment.Assign(stmt.name, klass);
+      return null;
     }
 
     public void ExecuteBlock(List<Stmt> statements, Environment environment) {
@@ -120,6 +135,19 @@ namespace cslox
       } else {
         globals.Assign(expr.name, value);
       }
+      return value;
+    }
+
+    public object? VisitSetExpr(Expr.Set expr)
+    {
+      object? obj = Evaluate(expr.obj);
+
+      if(obj is not LoxInstance) {
+        throw new RuntimeException(expr.name, "Only instances have fields.");
+      }
+
+      object? value = Evaluate(expr.value);
+      ((LoxInstance)obj).Set(expr.name, value);
       return value;
     }
 
@@ -228,6 +256,21 @@ namespace cslox
 
       // Unreachable
       return null;  
+    }
+
+    public object? VisitGetExpr(Expr.Get expr)
+    {
+      object? obj = Evaluate(expr.obj);
+      if(obj is LoxInstance) {
+        return ((LoxInstance)obj).Get(expr.name);
+      }
+
+      throw new RuntimeException(expr.name, "Only instances have properties");
+    }
+
+    public object? VisitThisExpr(Expr.This expr)
+    {
+      return LookupVariable(expr.keyword, expr);
     }
 
     public object? VisitVariableExpr(Expr.Variable expr)

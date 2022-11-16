@@ -15,14 +15,18 @@ void Main() {
     "Assign     : Token name, Expr value",
     "Binary     : Expr left, Token op, Expr right",
     "Call       : Expr callee, Token paren, List<Expr> arguments",
+    "Get        : Expr obj, Token name",
     "Grouping   : Expr expression",
     "Literal    : object? value",
     "Logical    : Expr left, Token op, Expr right",
+    "Set        : Expr obj, Token name, Expr value",
+    "This       : Token keyword",
     "Variable   : Token name",
     "Unary      : Token op, Expr right" }.ToList());
   
   DefineAst(outputDir, "Stmt", new[] {
     "Block       : List<Stmt> statements",
+    "Class       : Token name, List<Stmt.Function> methods",
     "Expression  : Expr expression",
     "Function    : Token name, List<Token> parms, List<Stmt> body",
     "If          : Expr condition, Stmt thenBranch, Stmt? elseBranch",

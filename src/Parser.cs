@@ -33,6 +33,7 @@ namespace cslox
     {
       try
       {
+        if (Match(TokenType.CLASS)) return ClassDeclaration();
         if (Match(TokenType.FUN)) return Function("function");
         if (Match(TokenType.VAR)) return VarDeclaration();
         return Statement();
@@ -44,13 +45,17 @@ namespace cslox
       }
     }
 
-    Stmt Function(string kind) {
+    Stmt Function(string kind)
+    {
       Token name = Consume(TokenType.IDENTIFIER, $"Expect {kind} name.");
       Consume(TokenType.LEFT_PAREN, $"Expect '(' after {kind} name.");
       List<Token> parameters = new List<Token>();
-      if(!Check(TokenType.RIGHT_PAREN)) {
-        do {
-          if(parameters.Count >= 255) {
+      if (!Check(TokenType.RIGHT_PAREN))
+      {
+        do
+        {
+          if (parameters.Count >= 255)
+          {
             Program.Error(Peek(), "Can't have more than 255 parameters.");
           }
 
@@ -62,6 +67,21 @@ namespace cslox
       Consume(TokenType.LEFT_BRACE, $"Expect '{{' before {kind} body.");
       List<Stmt> body = Block();
       return new Stmt.Function(name, parameters, body);
+    }
+
+    Stmt ClassDeclaration()
+    {
+      Token name = Consume(TokenType.IDENTIFIER, "Expect class name.");
+      Consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
+
+      List<Stmt.Function> methods = new List<Stmt.Function>();
+      while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+      {
+        methods.Add((Stmt.Function)Function("method"));
+      }
+
+      Consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+      return new Stmt.Class(name, methods);
     }
 
     Stmt VarDeclaration()
@@ -83,17 +103,19 @@ namespace cslox
       if (Match(TokenType.FOR)) return ForStatement();
       if (Match(TokenType.IF)) return IfStatement();
       if (Match(TokenType.PRINT)) return PrintStatement();
-      if(Match(TokenType.RETURN)) return ReturnStatement();
+      if (Match(TokenType.RETURN)) return ReturnStatement();
       if (Match(TokenType.WHILE)) return WhileStatement();
       if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
 
       return ExpressionStatement();
     }
 
-    Stmt ReturnStatement() {
+    Stmt ReturnStatement()
+    {
       Token keyword = Previous();
       Expr? value = null;
-      if(!Check(TokenType.SEMICOLON)) {
+      if (!Check(TokenType.SEMICOLON))
+      {
         value = Expression();
       }
 
@@ -240,6 +262,9 @@ namespace cslox
         {
           Token name = ((Expr.Variable)expr).name;
           return new Expr.Assign(name, value);
+        } else if(expr is Expr.Get) {
+          Expr.Get get = (Expr.Get)expr;
+          return new Expr.Set(get.obj, get.name, value);
         }
 
         Program.Error(equals, "Invalid assignment target.");
@@ -354,6 +379,11 @@ namespace cslox
         {
           expr = FinishCall(expr);
         }
+        else if (Match(TokenType.DOT))
+        {
+          Token name = Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+          expr = new Expr.Get(expr, name);
+        }
         else
         {
           break;
@@ -393,6 +423,8 @@ namespace cslox
       {
         return new Expr.Literal(Previous().literal);
       }
+
+      if (Match(TokenType.THIS)) return new Expr.This(Previous());
 
       if (Match(TokenType.IDENTIFIER))
       {
