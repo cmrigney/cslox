@@ -23,10 +23,24 @@ namespace cslox
     }
 
     /*
+    Example syntax:
     program       -> declaration* EOF;
     declaration   -> varDecl | statement;
     statement     -> exprStmt | printStmt;
     varDecl       -> "var" IDENTIFIER ( "=" expression )? ";" ;
+    */
+
+    /*
+    expression     → equality ;
+    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    term           → factor ( ( "-" | "+" ) factor )* ;
+    factor         → unary ( ( "/" | "*" ) unary )* ;
+    unary          → ( "!" | "-" ) unary
+                  | primary ;
+    primary        → NUMBER | STRING | "true" | "false" | "nil"
+                  | "(" expression ")"
+                  | IDENTIFIER;
     */
 
     Stmt? Declaration()
@@ -237,19 +251,6 @@ namespace cslox
       Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
       return new Stmt.Expression(expr);
     }
-
-    /*
-    expression     → equality ;
-    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-    term           → factor ( ( "-" | "+" ) factor )* ;
-    factor         → unary ( ( "/" | "*" ) unary )* ;
-    unary          → ( "!" | "-" ) unary
-                  | primary ;
-    primary        → NUMBER | STRING | "true" | "false" | "nil"
-                  | "(" expression ")"
-                  | IDENTIFIER;
-    */
 
     Expr Expression()
     {
