@@ -4,9 +4,11 @@ namespace cslox
   {
     public string name;
     public Dictionary<string, LoxFunction> methods;
+    public LoxClass? superclass;
 
-    public LoxClass(string name, Dictionary<string, LoxFunction> methods)
+    public LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxFunction> methods)
     {
+      this.superclass = superclass;
       this.name = name;
       this.methods = methods;
     }
@@ -31,6 +33,10 @@ namespace cslox
     public LoxFunction? FindMethod(string name) {
       if(methods.ContainsKey(name)) {
         return methods[name];
+      }
+
+      if(superclass != null) {
+        return superclass.FindMethod(name);
       }
 
       return null;

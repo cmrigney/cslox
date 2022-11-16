@@ -2,7 +2,7 @@ namespace cslox
 {
   public class Environment
   {
-    Environment? enclosing;
+    public Environment? enclosing;
     Dictionary<string, object?> values = new Dictionary<string, object?>();
 
     public Environment() {

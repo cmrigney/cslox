@@ -20,13 +20,14 @@ void Main() {
     "Literal    : object? value",
     "Logical    : Expr left, Token op, Expr right",
     "Set        : Expr obj, Token name, Expr value",
+    "Super      : Token keyword, Token method",
     "This       : Token keyword",
     "Variable   : Token name",
     "Unary      : Token op, Expr right" }.ToList());
   
   DefineAst(outputDir, "Stmt", new[] {
     "Block       : List<Stmt> statements",
-    "Class       : Token name, List<Stmt.Function> methods",
+    "Class       : Token name, Expr.Variable? superclass, List<Stmt.Function> methods",
     "Expression  : Expr expression",
     "Function    : Token name, List<Token> parms, List<Stmt> body",
     "If          : Expr condition, Stmt thenBranch, Stmt? elseBranch",

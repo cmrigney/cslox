@@ -10,6 +10,7 @@ namespace cslox {
       R VisitLiteralExpr(Literal expr);
       R VisitLogicalExpr(Logical expr);
       R VisitSetExpr(Set expr);
+      R VisitSuperExpr(Super expr);
       R VisitThisExpr(This expr);
       R VisitVariableExpr(Variable expr);
       R VisitUnaryExpr(Unary expr);
@@ -122,6 +123,19 @@ namespace cslox {
       public Expr obj;
       public Token name;
       public Expr value;
+    }
+    public class Super : Expr {
+      public Super(Token keyword, Token method) {
+        this.keyword = keyword;
+        this.method = method;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor) {
+        return  visitor.VisitSuperExpr(this);
+      }
+
+      public Token keyword;
+      public Token method;
     }
     public class This : Expr {
       public This(Token keyword) {
