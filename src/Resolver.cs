@@ -288,5 +288,12 @@ namespace cslox {
       EndScope();
       currentFunction = enclosingFunction;
     }
+
+    public object? VisitImportStmt(Stmt.Import stmt)
+    {
+      // Global imports have been filtered
+      Program.Error(stmt.filename, "Import cannot be nested.");
+      return null;
+    }
   }
 }

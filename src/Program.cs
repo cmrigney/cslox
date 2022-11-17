@@ -3,7 +3,7 @@
 
   class Program
   {
-    static bool hadError = false;
+    public static bool hadError = false;
     static bool hadRuntimeError = false;
     static Interpreter interpreter = new Interpreter();
 
@@ -28,7 +28,7 @@
     static void RunFile(string path)
     {
       string content = File.ReadAllText(path);
-      Run(content);
+      Run(content, Path.GetDirectoryName(path)!);
 
       if(hadError) System.Environment.Exit(65);
       if(hadRuntimeError) System.Environment.Exit(70);
@@ -41,17 +41,19 @@
         Console.Write("> ");
         string? line = Console.ReadLine();
         if (line == null) break;
-        Run(line);
+        Run(line, Directory.GetCurrentDirectory());
         hadError = false;
       }
     }
 
-    static void Run(string source)
+    static void Run(string source, string cwd)
     {
       Scanner scanner = new Scanner(source);
       List<Token> tokens = scanner.ScanTokens();
       Parser parser = new Parser(tokens);
       List<Stmt> statements = parser.Parse();
+
+      new ImportResolver().ResolveImports(statements, cwd);
 
       // Stop if there was a syntax error
       if(hadError) return;
@@ -63,14 +65,6 @@
       if(hadError) return;
 
       interpreter.Interpret(statements);
-      // if(expression != null) {
-      //   // Console.WriteLine(new AstPrinter().print(expression));
-      //   interpreter.Interpret(expression);
-      // }
-      // foreach (Token token in tokens)
-      // {
-      //   Console.WriteLine(token);
-      // }
     }
 
     public static void Error(int line, string message)

@@ -32,6 +32,7 @@ void Main() {
     "Function    : Token name, List<Token> parms, List<Stmt> body",
     "If          : Expr condition, Stmt thenBranch, Stmt? elseBranch",
     "Print       : Expr expression",
+    "Import      : Token filename",
     "Return      : Token keyword, Expr? value",
     "Var         : Token name, Expr? initializer",
     "While       : Expr condition, Stmt body"

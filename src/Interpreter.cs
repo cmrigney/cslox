@@ -357,6 +357,12 @@ namespace cslox
       throw new RuntimeException(op, "Operand must be a number.");
     }
 
+    public object? VisitImportStmt(Stmt.Import stmt)
+    {
+      // Should error at resolver
+      throw new NotImplementedException();
+    }
+
     public class RuntimeException : Exception {
       public Token token;
       public RuntimeException(Token token, string message) : base(message) {

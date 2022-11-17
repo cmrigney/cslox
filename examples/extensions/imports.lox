@@ -1,0 +1,5 @@
+import "./imports/import-b.lox";
+import "./imports/import-c.lox";
+import "./imports/fib.lox";
+
+print fib(20);

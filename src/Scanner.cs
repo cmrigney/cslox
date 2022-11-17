@@ -180,6 +180,7 @@ namespace cslox
         { "true", TokenType.TRUE },
         { "var", TokenType.VAR },
         { "while", TokenType.WHILE },
+        { "import", TokenType.IMPORT },
       };
     }
 }

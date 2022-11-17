@@ -1,0 +1,3 @@
+import "./import-a.lox";
+
+print "Imported B";

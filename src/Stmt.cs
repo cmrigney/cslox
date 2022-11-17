@@ -8,6 +8,7 @@ namespace cslox {
       R VisitFunctionStmt(Function stmt);
       R VisitIfStmt(If stmt);
       R VisitPrintStmt(Print stmt);
+      R VisitImportStmt(Import stmt);
       R VisitReturnStmt(Return stmt);
       R VisitVarStmt(Var stmt);
       R VisitWhileStmt(While stmt);
@@ -90,6 +91,17 @@ namespace cslox {
       }
 
       public Expr expression;
+    }
+    public class Import : Stmt {
+      public Import(Token filename) {
+        this.filename = filename;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor) {
+        return  visitor.VisitImportStmt(this);
+      }
+
+      public Token filename;
     }
     public class Return : Stmt {
       public Return(Token keyword, Expr? value) {

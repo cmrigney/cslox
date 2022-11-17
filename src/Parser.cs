@@ -88,7 +88,8 @@ namespace cslox
       Token name = Consume(TokenType.IDENTIFIER, "Expect class name.");
 
       Expr.Variable? superclass = null;
-      if(Match(TokenType.LESS)) {
+      if (Match(TokenType.LESS))
+      {
         Consume(TokenType.IDENTIFIER, "Expect superclass name.");
         superclass = new Expr.Variable(Previous());
       }
@@ -124,11 +125,20 @@ namespace cslox
       if (Match(TokenType.FOR)) return ForStatement();
       if (Match(TokenType.IF)) return IfStatement();
       if (Match(TokenType.PRINT)) return PrintStatement();
+      if (Match(TokenType.IMPORT)) return ImportStatement();
       if (Match(TokenType.RETURN)) return ReturnStatement();
       if (Match(TokenType.WHILE)) return WhileStatement();
       if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
 
       return ExpressionStatement();
+    }
+
+    Stmt ImportStatement()
+    {
+      // Token keyword = Previous();
+      Token filename = Consume(TokenType.STRING, "Import must be followed by string.");
+      Consume(TokenType.SEMICOLON, "Expect ';' after import.");
+      return new Stmt.Import(filename);
     }
 
     Stmt ReturnStatement()
@@ -270,7 +280,9 @@ namespace cslox
         {
           Token name = ((Expr.Variable)expr).name;
           return new Expr.Assign(name, value);
-        } else if(expr is Expr.Get) {
+        }
+        else if (expr is Expr.Get)
+        {
           Expr.Get get = (Expr.Get)expr;
           return new Expr.Set(get.obj, get.name, value);
         }
@@ -432,7 +444,8 @@ namespace cslox
         return new Expr.Literal(Previous().literal);
       }
 
-      if(Match(TokenType.SUPER)) {
+      if (Match(TokenType.SUPER))
+      {
         Token keyword = Previous();
         Consume(TokenType.DOT, "Expect '.' after 'super'.");
         Token method = Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
